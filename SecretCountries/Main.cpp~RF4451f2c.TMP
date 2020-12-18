@@ -1,0 +1,142 @@
+#include "Main.h"
+
+wxBEGIN_EVENT_TABLE(Main, wxFrame)
+	EVT_PAINT(Main::OnPaint)
+	EVT_SIZE(Main::Resized)
+	EVT_KEY_DOWN(Main::KeyDown)
+wxEND_EVENT_TABLE()
+
+Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(1920/2, 1080/2))
+{
+	// Initialize components here
+	SetBackgroundStyle(wxBG_STYLE_PAINT);
+
+	// =============
+	const char* shpDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.shp";
+	const char* shxDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.shx";
+	const char* csvDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.csv";
+	// =============
+
+	zoom = 1;
+	ReadPolyShapefile(dataset, shpDir);
+	ReadCountriesCSV(countries, csvDir);
+}
+
+Main::~Main()
+{
+
+}
+
+Point CoordinateTransform(Point in, Shapefile& mapping, int screenW, int screenH)
+{
+	double& inXMin = mapping.fileStats.xMin;
+	double& inYMin = mapping.fileStats.yMin;
+	double& inXMax = mapping.fileStats.xMax;
+	double& inYMax = mapping.fileStats.yMax;
+
+	Point result = Point();
+	result.x = (in.x - inXMin) / (inXMax - inXMin) * screenW;
+	result.y = screenH - (in.y - inYMin) / (inYMax - inYMin) * screenH;
+
+	return result;
+}
+
+void Main::DrawTransform(wxDC& dc, double x1, double y1, double x2, double y2)
+{
+	double& inXMin = dataset.fileStats.xMin;
+	double& inYMin = dataset.fileStats.yMin;
+	double& inXMax = dataset.fileStats.xMax;
+	double& inYMax = dataset.fileStats.yMax;
+
+	double screenX1 = (x1 - inXMin) / (inXMax - inXMin) * width;
+	double screenY1 = height - (y1 - inYMin) / (inYMax - inYMin) * height;
+	double screenX2 = (x2 - inXMin) / (inXMax - inXMin) * width;
+	double screenY2 = height - (y2 - inYMin) / (inYMax - inYMin) * height;
+
+	dc.DrawLine(screenX1, screenY1, screenX2, screenY2);
+}
+
+void Main::OnDraw(wxDC& dc)
+{
+	dc.Clear();
+	wxBrush brush = dc.GetBrush();
+	wxPen pen = dc.GetPen();
+
+	pen.SetStyle(wxPENSTYLE_SOLID);
+	pen.SetColour(wxColour(0, 0, 0));
+
+	dc.SetPen(pen);
+	dc.SetBrush(brush);
+
+	for (int polyI = 0; polyI < dataset.polygons.size(); polyI++)
+	{
+		int nextRingI;
+		if (dataset.polygons[polyI].parts.size() == 1)
+		{
+			nextRingI = dataset.polygons[polyI].tPoints;
+		}
+		else
+		{
+			nextRingI = dataset.polygons[polyI].parts[1];
+		}
+		for (int ringI = 0; ringI < dataset.polygons[polyI].parts.size(); ringI++)
+		{
+			double ringStartX = dataset.polygons[polyI].points[dataset.polygons[polyI].parts[ringI]].x;
+			double ringStartY = dataset.polygons[polyI].points[dataset.polygons[polyI].parts[ringI]].y;
+			double pastX = ringStartX;
+			double pastY = ringStartY;
+			for (int pointI = dataset.polygons[polyI].parts[ringI] + 1; pointI < nextRingI; pointI++)
+			{
+				double x = dataset.polygons[polyI].points[pointI].x;
+				double y = dataset.polygons[polyI].points[pointI].y;
+
+				if (x != pastX || y != pastY)
+				{
+					//dc.DrawLine(pastX, pastY, x, y);
+					DrawTransform(dc, pastX, pastY, x, y);
+				}
+
+				pastX = x;
+				pastY = y;
+			}
+			DrawTransform(dc, pastX, pastY, ringStartX, ringStartY);
+			if (ringI >= (signed int)dataset.polygons[polyI].parts.size() - 2)
+			{
+				nextRingI = dataset.polygons[polyI].tPoints;
+			}
+			else
+			{
+				nextRingI = dataset.polygons[polyI].parts[ringI + 2];
+			}
+		}
+	}
+	//CountryData test = countries[0];
+	//dc.DrawText(wxString(test.name), 10, 10);
+}
+
+void Main::OnPaint(wxPaintEvent& evt)
+{
+	wxBufferedPaintDC dc(this);
+	this->PrepareDC(dc);
+	this->OnDraw(dc);
+}
+
+void Main::Resized(wxSizeEvent& evt)
+{
+	width = evt.GetSize().x;
+	height = evt.GetSize().y;
+	this->Refresh();
+}
+
+void Main::KeyDown(wxKeyEvent& evt)
+{
+	if (evt.GetKeyCode() == WXK_UP)
+	{
+		zoom += 0.1;
+	}
+	if (evt.GetKeyCode() == WXK_DOWN)
+	{
+		zoom -= 0.1;
+	}
+	this->Refresh();
+}
