@@ -29,7 +29,7 @@ mPoint Main::Transform(mPoint p)
 	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
 	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
 	double x_ = (p.x - dataset.fileStats.xMin) / dataWidth * 600;
-	double y_ = (p.y - dataset.fileStats.yMin) / dataHeight * 600;
+	double y_ = 600 - (p.y - dataset.fileStats.yMin) / dataHeight * 600;
 
 	return mPoint(x_, y_);
 }
@@ -39,7 +39,7 @@ mPoint Main::Transform(double x, double y)
 	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
 	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
 	double x_ = (x - dataset.fileStats.xMin) / dataWidth * 600;
-	double y_ = (y - dataset.fileStats.yMin) / dataHeight * 600;
+	double y_ = 600 - (y - dataset.fileStats.yMin) / dataHeight * 600;
 
 	return mPoint(x_, y_);
 }
