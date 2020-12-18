@@ -7,6 +7,7 @@
 
 #include "shp.h"
 #include "iofunctions.h"
+#include <string>
 
 class Main : public wxFrame
 {
@@ -28,4 +29,5 @@ private:
 	void Resized(wxSizeEvent& evt);
 	//void KeyDown(wxKeyEvent& evt);
 	int width, height;
+	std::string franceName;
 };

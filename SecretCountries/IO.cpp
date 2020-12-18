@@ -16,6 +16,7 @@ void Split(std::vector<std::string>& result, std::string s, std::string delim)
         start = end + delim.length();
         end = s.find(delim, start);
     }
+    if (end != s.length()) { result.push_back(s.substr(start, s.length() - start)); }
 }
 
 void endian(mByte* data, size_t size)
@@ -108,13 +109,14 @@ void ReadCountriesCSV(std::vector<CountryData>& countries, const char* dir)
     std::ifstream csvFile = std::ifstream(dir);
 
     std::string line;
+    std::getline(csvFile, line);
     while (std::getline(csvFile, line))
     {
         std::vector<std::string> splitStr;
         Split(splitStr, line, ",");
         CountryData country;
 
-        country.name = splitStr[4].c_str();
+        country.name = splitStr[4];
         country.lat = std::stod(splitStr[10]);
         country.lon = std::stod(splitStr[9]);
         countries.push_back(country);

@@ -50,6 +50,6 @@ struct Shapefile
 };
 struct CountryData
 {
-	const char* name;
+	std::string name;
 	double lat, lon;
 };

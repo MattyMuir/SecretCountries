@@ -5,7 +5,7 @@ wxBEGIN_EVENT_TABLE(Main, wxFrame)
 	EVT_SIZE(Main::Resized)
 wxEND_EVENT_TABLE()
 
-Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(600, 600))
+Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(1280, 720))
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	width = this->GetSize().x;
@@ -65,8 +65,19 @@ void Main::OnDraw(wxDC& dc)
 
 	int polyCount = dataset.polygons.size();
 
+	int polyIndex = 0;
 	for (mPolygon& poly : dataset.polygons)
 	{
+		if (countries[polyIndex].name == "Mongolia")
+		{
+			pen.SetColour(255, 0, 0);
+			dc.SetPen(pen);
+		}
+		else
+		{
+			pen.SetColour(0, 0, 0);
+			dc.SetPen(pen);
+		}
 		for (int ringIndex = 0; ringIndex < poly.nRings; ringIndex++)
 		{
 			int startIndex = poly.parts[ringIndex];
@@ -83,6 +94,7 @@ void Main::OnDraw(wxDC& dc)
 			}
 			mDrawLine(dc, last, ringStart);
 		}
+		polyIndex++;
 	}
 }
 
