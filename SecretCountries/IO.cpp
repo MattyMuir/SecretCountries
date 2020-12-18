@@ -89,8 +89,8 @@ void ReadPolyShapefile(Shapefile& result, const char* shpDir)
         // Loop through points
         for (int i = 0; i < p.tPoints; i++)
         {
-            p.points.emplace_back(Point());
-            Point& point = p.points[p.points.size() - 1];
+            p.points.emplace_back(mPoint());
+            mPoint& point = p.points[p.points.size() - 1];
             //file.ignore(4);
             file.read((mByte*)&point.x, 8);
             file.read((mByte*)&point.y, 8);

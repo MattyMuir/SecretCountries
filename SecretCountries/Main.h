@@ -20,6 +20,9 @@ public:
 
 	wxDECLARE_EVENT_TABLE();
 private:
+	mPoint Transform(mPoint p);
+	mPoint Transform(double x, double y);
+	void mDrawLine(wxDC& dc, mPoint p1, mPoint p2);
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	/*void Resized(wxSizeEvent& evt);
