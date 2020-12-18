@@ -13,6 +13,7 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 
 	// ========================
 	const char* shpDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.shp";
+	const char* csvDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.csv";
 	// ========================
 
 	ReadPolyShapefile(dataset, shpDir);
@@ -20,6 +21,8 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	{
 		poly.parts.push_back(poly.tPoints);
 	}
+
+	ReadCountriesCSV(countries, csvDir);
 }
 
 Main::~Main()
