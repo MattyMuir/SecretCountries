@@ -25,8 +25,7 @@ private:
 	void mDrawLine(wxDC& dc, mPoint p1, mPoint p2);
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
-	/*void Resized(wxSizeEvent& evt);
-	void KeyDown(wxKeyEvent& evt);*/
+	void Resized(wxSizeEvent& evt);
+	//void KeyDown(wxKeyEvent& evt);
 	int width, height;
-	double zoom;
 };

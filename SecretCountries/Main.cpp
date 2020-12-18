@@ -2,11 +2,14 @@
 
 wxBEGIN_EVENT_TABLE(Main, wxFrame)
 	EVT_PAINT(Main::OnPaint)
+	EVT_SIZE(Main::Resized)
 wxEND_EVENT_TABLE()
 
 Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(600, 600))
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
+	width = this->GetSize().x;
+	height = this->GetSize().y;
 
 	// ========================
 	const char* shpDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.shp";
@@ -28,8 +31,8 @@ mPoint Main::Transform(mPoint p)
 {
 	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
 	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
-	double x_ = (p.x - dataset.fileStats.xMin) / dataWidth * 600;
-	double y_ = 600 - (p.y - dataset.fileStats.yMin) / dataHeight * 600;
+	double x_ = (p.x - dataset.fileStats.xMin) / dataWidth * width;
+	double y_ = height - (p.y - dataset.fileStats.yMin) / dataHeight * height;
 
 	return mPoint(x_, y_);
 }
@@ -38,8 +41,8 @@ mPoint Main::Transform(double x, double y)
 {
 	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
 	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
-	double x_ = (x - dataset.fileStats.xMin) / dataWidth * 600;
-	double y_ = 600 - (y - dataset.fileStats.yMin) / dataHeight * 600;
+	double x_ = (x - dataset.fileStats.xMin) / dataWidth * width;
+	double y_ = height - (y - dataset.fileStats.yMin) / dataHeight * height;
 
 	return mPoint(x_, y_);
 }
@@ -85,4 +88,12 @@ void Main::OnPaint(wxPaintEvent& evt)
 	wxBufferedPaintDC dc (this);
 	this->PrepareDC(dc);
 	this->OnDraw(dc);
+}
+
+void Main::Resized(wxSizeEvent& evt)
+{
+	width = evt.GetSize().x;
+	height = evt.GetSize().y;
+
+	this->Refresh();
 }
