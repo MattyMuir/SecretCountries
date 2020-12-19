@@ -28,8 +28,7 @@ private:
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	void Resized(wxSizeEvent& evt);
-	void KeyDown(wxCommandEvent& evt);
+	void KeyDown(wxKeyEvent& evt);
 	int width, height;
-	double hue;
 	int highlight;
 };
