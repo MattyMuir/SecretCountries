@@ -28,7 +28,8 @@ private:
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	void Resized(wxSizeEvent& evt);
-	//void KeyDown(wxKeyEvent& evt);
+	void KeyDown(wxCommandEvent& evt);
 	int width, height;
-	std::string franceName;
+	double hue;
+	int highlight;
 };
