@@ -57,27 +57,46 @@ void Main::mDrawLine(wxDC& dc, mPoint p1, mPoint p2)
 
 void Main::OnDraw(wxDC& dc)
 {
+	wxColour defaultCol = wxHSL(120, 255, 255);
+
 	dc.Clear();
 	wxPen pen = dc.GetPen();
 	pen.SetStyle(wxPENSTYLE_SOLID);
-	pen.SetColour(wxColour(0, 0, 0));
+	pen.SetColour(defaultCol);
 	dc.SetPen(pen);
 
 	int polyCount = dataset.polygons.size();
-
 	int polyIndex = 0;
 	for (mPolygon& poly : dataset.polygons)
 	{
-		if (countries[polyIndex].name == "Mongolia")
+		if (countries[polyIndex].name == "Sri Lanka")
 		{
 			pen.SetColour(255, 0, 0);
 			dc.SetPen(pen);
 		}
 		else
 		{
-			pen.SetColour(0, 0, 0);
+			pen.SetColour(defaultCol);
 			dc.SetPen(pen);
 		}
+		//wxPoint* pointArr = new wxPoint[poly.parts[1] + 1];
+		/*std::vector<wxPoint> pointsSource;
+
+		wxPointList pointArr;
+		for (int i = 0; i < poly.parts[1]; i++)
+		{
+			mPoint p = mPoint(poly.points[i].x, poly.points[i].y);
+			mPoint screen = Transform(p);
+			pointsSource.push_back(wxPoint(screen.x, screen.y));
+			pointArr.Append(&pointsSource[i]);
+		}
+		mPoint p = mPoint(poly.points[0].x, poly.points[0].y);
+		mPoint screen = Transform(p);
+		pointsSource.push_back(wxPoint(screen.x, screen.y));
+		pointArr.Append(&pointsSource[poly.parts[1]]);
+
+		dc.DrawLines(&pointArr);
+		//dc.DrawPolygon(&pointArr, 0, 0, wxODDEVEN_RULE);*/
 		for (int ringIndex = 0; ringIndex < poly.nRings; ringIndex++)
 		{
 			int startIndex = poly.parts[ringIndex];
@@ -94,6 +113,7 @@ void Main::OnDraw(wxDC& dc)
 			}
 			mDrawLine(dc, last, ringStart);
 		}
+
 		polyIndex++;
 	}
 }

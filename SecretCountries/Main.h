@@ -7,6 +7,7 @@
 
 #include "shp.h"
 #include "iofunctions.h"
+#include "colour.h"
 #include <string>
 
 class Main : public wxFrame
