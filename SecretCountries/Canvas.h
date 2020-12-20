@@ -5,15 +5,21 @@
 #include <wx\dcbuffer.h>
 
 #include <string>
+#include <vector>
 #include "shp.h"
 #include "iofunctions.h"
 #include "colour.h"
 
-class Canvas : wxPanel
+class Canvas : public wxPanel
 {
 public:
 	Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_);
 	~Canvas();
+
+	std::string displayText;
+	int secretIndex;
+	std::vector<int> guessInicies;
+	void mRefresh();
 protected:
 	int w, h;
 	Shapefile* datasetPtr;
@@ -25,6 +31,8 @@ protected:
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	void Resized(wxSizeEvent& evt);
+
+	void KeyDown(wxKeyEvent& evt);
 
 	wxDECLARE_EVENT_TABLE();
 };

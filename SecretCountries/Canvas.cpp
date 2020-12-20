@@ -3,6 +3,8 @@
 wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_PAINT(Canvas::OnPaint)
 	EVT_SIZE(Canvas::Resized)
+
+	EVT_KEY_DOWN(Canvas::KeyDown)
 wxEND_EVENT_TABLE()
 
 Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_) : wxPanel(parent, wxID_ANY)
@@ -10,11 +12,17 @@ Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	datasetPtr = datasetPtr_;
 	countriesPtr = countriesPtr_;
+	displayText = "";
 }
 
 Canvas::~Canvas()
 {
 
+}
+
+void Canvas::mRefresh()
+{
+	this->Refresh();
 }
 
 mPoint Canvas::Transform(mPoint p)
@@ -65,7 +73,15 @@ void Canvas::OnDraw(wxDC& dc)
 	int polyIndex = 0;
 	for (mPolygon poly : dataset.polygons)
 	{
-		if (countries[polyIndex].name == "Indonesia")
+		bool guessed = false;
+		for (int guess : guessInicies)
+		{
+			if (polyIndex == guess)
+			{
+				guessed = true;
+			}
+		}
+		if (guessed)
 		{
 			brush.SetColour(255, 0, 0);
 			dc.SetBrush(brush);
@@ -95,6 +111,8 @@ void Canvas::OnDraw(wxDC& dc)
 		}
 		polyIndex++;
 	}
+	dc.SetTextForeground(wxColour(255, 0, 0));
+	dc.DrawText(wxString(displayText), wxPoint(50, 50));
 }
 
 void Canvas::OnPaint(wxPaintEvent& evt)
@@ -110,4 +128,14 @@ void Canvas::Resized(wxSizeEvent& evt)
 	this->GetSize(&w, &h);
 	this->Refresh();
 	evt.Skip();
+}
+
+void Canvas::KeyDown(wxKeyEvent& evt)
+{
+	char c = evt.GetUnicodeKey();
+	if ('A' <= c && c <= 'Z')
+	{
+		displayText += c;
+		this->Refresh();
+	}
 }
