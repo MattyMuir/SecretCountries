@@ -119,6 +119,14 @@ void ReadCountriesCSV(std::vector<CountryData>& countries, const char* dir)
         country.name = splitStr[4];
         country.lat = std::stod(splitStr[10]);
         country.lon = std::stod(splitStr[9]);
+        try
+        {
+            country.area = std::stoi(splitStr[5], nullptr, 10);
+        }
+        catch (const std::exception& e)
+        {
+            int a = 1;
+        }
         countries.push_back(country);
     }
     csvFile.close();

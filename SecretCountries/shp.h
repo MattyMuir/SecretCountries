@@ -52,4 +52,5 @@ struct CountryData
 {
 	std::string name;
 	double lat, lon;
+	int area;
 };

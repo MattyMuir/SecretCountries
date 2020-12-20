@@ -18,7 +18,7 @@ public:
 
 	std::string displayText;
 	int secretIndex;
-	std::vector<int> guessInicies;
+	std::vector<int> guessIndicies;
 	void mRefresh();
 protected:
 	int w, h;

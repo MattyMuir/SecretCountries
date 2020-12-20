@@ -17,6 +17,11 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 		poly.parts.push_back(poly.tPoints);
 	}
 	ReadCountriesCSV(countries, csvDir);
+	for (CountryData& country : countries)
+	{
+		std::transform(country.name.begin(), country.name.end(), country.name.begin(),
+			[](unsigned char c) { return std::tolower(c); });
+	}
 
 	std::random_device rd;
 	std::mt19937 mt(rd());
@@ -39,7 +44,7 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	this->SetSizer(mSizer);
 
 	mCanvas->secretIndex = secretIndex;
-	//mCanvas->displayText = std::to_string(secretIndex);
+	mCanvas->displayText = countries[secretIndex].name;
 }
 
 Main::~Main()
@@ -50,11 +55,14 @@ Main::~Main()
 void Main::ButtonPressed(wxCommandEvent& evt)
 {
 	std::string guess = std::string(mTextBox->GetValue().c_str());
+	std::transform(guess.begin(), guess.end(), guess.begin(),
+		[](unsigned char c) { return std::tolower(c); });
+
 	mTextBox->Clear();
 	int index = -1;
 	for (int i = 0; i < countries.size(); i++)
 		if (countries[i].name == guess) { index = i; }
-	mCanvas->guessInicies.push_back(index);
+	mCanvas->guessIndicies.push_back(index);
 	mCanvas->mRefresh();
 	evt.Skip();
 }

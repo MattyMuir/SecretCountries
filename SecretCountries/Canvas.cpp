@@ -74,7 +74,7 @@ void Canvas::OnDraw(wxDC& dc)
 	for (mPolygon poly : dataset.polygons)
 	{
 		bool guessed = false;
-		for (int guess : guessInicies)
+		for (int guess : guessIndicies)
 		{
 			if (polyIndex == guess)
 			{
@@ -83,12 +83,33 @@ void Canvas::OnDraw(wxDC& dc)
 		}
 		if (guessed)
 		{
-			brush.SetColour(255, 0, 0);
+			CountryData& g = countries[polyIndex];
+			CountryData& s = countries[secretIndex];
+
+			double dist = sqrt(pow(g.lat - s.lat, 2) + pow(g.lon - s.lon, 2));
+			if (polyIndex == secretIndex)
+			{
+				pen.SetColour(wxColour(255, 0, 0));
+				brush.SetColour(wxColour(0, 0, 0));
+			}
+			else
+			{
+				pen.SetColour(defaultLine);
+				brush.SetColour(wxHSL(120 / (0.05 * dist + 1), 255, 255));
+			}
 			dc.SetBrush(brush);
+			dc.SetPen(pen);
+			if (g.area < 3000)
+			{
+				mPoint t = Transform(g.lon, g.lat);
+				dc.DrawCircle(t.x, t.y, 5);
+			}
 		}
 		else
 		{
 			brush.SetColour(defaultFill);
+			pen.SetColour(defaultLine);
+			dc.SetPen(pen);
 			dc.SetBrush(brush);
 		}
 		for (int ringIndex = 0; ringIndex < poly.nRings; ringIndex++)
@@ -113,6 +134,9 @@ void Canvas::OnDraw(wxDC& dc)
 	}
 	dc.SetTextForeground(wxColour(255, 0, 0));
 	dc.DrawText(wxString(displayText), wxPoint(50, 50));
+
+	brush.SetColour(wxColour(255, 0, 0));
+	dc.SetBrush(brush);
 }
 
 void Canvas::OnPaint(wxPaintEvent& evt)
