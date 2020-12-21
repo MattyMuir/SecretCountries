@@ -3,8 +3,6 @@
 wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_PAINT(Canvas::OnPaint)
 	EVT_SIZE(Canvas::Resized)
-
-	EVT_KEY_DOWN(Canvas::KeyDown)
 wxEND_EVENT_TABLE()
 
 Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_, bool draw_) : wxPanel(parent, wxID_ANY)
@@ -19,11 +17,6 @@ Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData
 Canvas::~Canvas()
 {
 
-}
-
-void Canvas::mRefresh()
-{
-	this->Refresh();
 }
 
 mPoint Canvas::Transform(mPoint p)
@@ -55,7 +48,7 @@ void Canvas::OnDraw(wxDC& dc)
 	Shapefile& dataset = *datasetPtr;
 	std::vector<CountryData>& countries = *countriesPtr;
 
-	wxColour defaultLine = /*wxHSL(hue, 255, 255)*/wxColour(0, 0, 0);
+	wxColour defaultLine = wxColour(0, 0, 0);
 	wxColour defaultFill = wxColour(255, 255, 255);
 
 	dc.Clear();
@@ -156,14 +149,4 @@ void Canvas::Resized(wxSizeEvent& evt)
 	this->GetSize(&w, &h);
 	this->Refresh();
 	evt.Skip();
-}
-
-void Canvas::KeyDown(wxKeyEvent& evt)
-{
-	char c = evt.GetUnicodeKey();
-	if ('A' <= c && c <= 'Z')
-	{
-		displayText += c;
-		this->Refresh();
-	}
 }

@@ -20,7 +20,6 @@ public:
 	std::string displayText;
 	int secretIndex;
 	std::vector<int> guessIndicies;
-	void mRefresh();
 protected:
 	int w, h;
 	Shapefile* datasetPtr;
@@ -32,8 +31,6 @@ protected:
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	void Resized(wxSizeEvent& evt);
-
-	void KeyDown(wxKeyEvent& evt);
 
 	wxDECLARE_EVENT_TABLE();
 };

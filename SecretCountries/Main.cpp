@@ -9,28 +9,11 @@ wxEND_EVENT_TABLE()
 
 Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(1280, 720))
 {
-	// ========================
-	//const char* shpDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.shp";
-	//const char* csvDir = "C:\\Users\\matty\\Documents\\Maps\\Shapefile\\TM_WORLD_BORDERS-0.3.csv";
-
 	const char* shpDir = "";
 	const char* csvDir = "";
 
 	hasSHP = false;
 	hasCSV = false;
-	// ========================
-
-	/*ReadPolyShapefile(dataset, shpDir);
-	for (mPolygon& poly : dataset.polygons)
-	{
-		poly.parts.push_back(poly.tPoints);
-	}
-	ReadCountriesCSV(countries, csvDir);
-	for (CountryData& country : countries)
-	{
-		std::transform(country.name.begin(), country.name.end(), country.name.begin(),
-			[](unsigned char c) { return std::tolower(c); });
-	}*/
 
 	// Window setup
 	mMenuBar = new wxMenuBar();
@@ -76,7 +59,7 @@ void Main::ButtonPressed(wxCommandEvent& evt)
 	for (int i = 0; i < countries.size(); i++)
 		if (countries[i].name == guess) { index = i; }
 	mCanvas->guessIndicies.push_back(index);
-	mCanvas->mRefresh();
+	mCanvas->Refresh();
 	evt.Skip();
 }
 
