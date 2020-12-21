@@ -52,7 +52,7 @@ Main::~Main()
 
 void Main::GuessMade()
 {
-	std::string guess = std::string(mTextBox->GetValue().c_str());
+	std::string guess = mTextBox->GetValue().ToStdString();
 	std::transform(guess.begin(), guess.end(), guess.begin(),
 		[](unsigned char c) { return std::tolower(c); });
 
@@ -60,7 +60,7 @@ void Main::GuessMade()
 	int index = -1;
 	for (int i = 0; i < countries.size(); i++)
 		if (countries[i].name == guess) { index = i; }
-	mCanvas->guessIndicies.push_back(index);
+	if (index != -1) { mCanvas->guessIndicies.push_back(index); }
 	mCanvas->Refresh();
 }
 
