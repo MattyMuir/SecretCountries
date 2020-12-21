@@ -35,6 +35,8 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	mTextBox = new wxTextCtrl(topPanel, wxID_ANY, "", wxPoint(110, 5), wxSize(100, 20));
 	guessButton = new wxButton(topPanel, 10001, "Guess", wxPoint(235, 0), wxSize(100, 30));
 
+	mTextBox->Bind(wxEVT_CHAR_HOOK, &Main::KeyEntered, this);
+
 	mSizer = new wxBoxSizer(wxVERTICAL);
 	mSizer->Add(topPanel, 0, wxEXPAND | wxALL);
 	mSizer->Add(mCanvas, 1, wxEXPAND | wxALL);
@@ -48,7 +50,7 @@ Main::~Main()
 
 }
 
-void Main::ButtonPressed(wxCommandEvent& evt)
+void Main::GuessMade()
 {
 	std::string guess = std::string(mTextBox->GetValue().c_str());
 	std::transform(guess.begin(), guess.end(), guess.begin(),
@@ -60,6 +62,11 @@ void Main::ButtonPressed(wxCommandEvent& evt)
 		if (countries[i].name == guess) { index = i; }
 	mCanvas->guessIndicies.push_back(index);
 	mCanvas->Refresh();
+}
+
+void Main::ButtonPressed(wxCommandEvent& evt)
+{
+	GuessMade();
 	evt.Skip();
 }
 
@@ -87,6 +94,15 @@ void Main::OnOpenSHP(wxCommandEvent& evt)
 		hasSHP = true;
 		InitializeCanvas();
 	}
+}
+
+void Main::KeyEntered(wxKeyEvent& evt)
+{
+	if (evt.GetKeyCode() == 13)
+	{
+		GuessMade();
+	}
+	evt.Skip();
 }
 
 void Main::OnOpenCSV(wxCommandEvent& evt)

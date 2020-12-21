@@ -45,7 +45,11 @@ private:
 	wxTextCtrl* mTextBox;
 	wxButton* guessButton;
 
+	void KeyEntered(wxKeyEvent& evt);
+
 	void ButtonPressed(wxCommandEvent& evt);
+	void GuessMade();
+
 	void GameReset(wxCommandEvent& evt);
 	void OnOpenSHP(wxCommandEvent& evt);
 	void OnOpenCSV(wxCommandEvent& evt);
