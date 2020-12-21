@@ -20,19 +20,37 @@ public:
 	~Main();
 	
 private:
+	std::string shpDir;
+	std::string csvDir;
+
+	bool hasSHP, hasCSV;
+
 	Shapefile dataset;
 	std::vector<CountryData> countries;
 	int secretIndex;
 
+	std::random_device rd;
+	std::mt19937 mt;
+	std::uniform_int_distribution<int> dist;
+
 	wxBoxSizer* mSizer;
 	Canvas* mCanvas;
 	wxPanel* topPanel;
+
+	wxMenuBar* mMenuBar;
+	wxMenu* fileMenu;
+	wxMenu* gameMenu;
 
 	wxStaticText* mLabel;
 	wxTextCtrl* mTextBox;
 	wxButton* guessButton;
 
 	void ButtonPressed(wxCommandEvent& evt);
+	void GameReset(wxCommandEvent& evt);
+	void OnOpenSHP(wxCommandEvent& evt);
+	void OnOpenCSV(wxCommandEvent& evt);
+
+	void InitializeCanvas();
 
 	wxDECLARE_EVENT_TABLE();
 };

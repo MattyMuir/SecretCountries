@@ -7,12 +7,13 @@ wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_KEY_DOWN(Canvas::KeyDown)
 wxEND_EVENT_TABLE()
 
-Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_) : wxPanel(parent, wxID_ANY)
+Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_, bool draw_) : wxPanel(parent, wxID_ANY)
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 	datasetPtr = datasetPtr_;
 	countriesPtr = countriesPtr_;
 	displayText = "";
+	draw = draw_;
 }
 
 Canvas::~Canvas()
@@ -142,9 +143,12 @@ void Canvas::OnDraw(wxDC& dc)
 void Canvas::OnPaint(wxPaintEvent& evt)
 {
 	wxBufferedPaintDC dc(this);
-	this->GetSize(&w, &h);
-	this->PrepareDC(dc);
-	this->OnDraw(dc);
+	if (draw)
+	{
+		this->GetSize(&w, &h);
+		this->PrepareDC(dc);
+		this->OnDraw(dc);
+	}
 }
 
 void Canvas::Resized(wxSizeEvent& evt)

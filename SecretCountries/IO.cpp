@@ -30,7 +30,7 @@ void endian(mByte* data, size_t size)
     }
 }
 
-void ReadPolyShapefile(Shapefile& result, const char* shpDir)
+void ReadPolyShapefile(Shapefile& result, std::string shpDir)
 {
     std::ifstream file = std::ifstream(shpDir, std::ios::in | std::ios::binary);
 
@@ -103,7 +103,7 @@ void ReadPolyShapefile(Shapefile& result, const char* shpDir)
     file.close();
 }
 
-void ReadCountriesCSV(std::vector<CountryData>& countries, const char* dir)
+void ReadCountriesCSV(std::vector<CountryData>& countries, std::string dir)
 {
     countries.clear();
     std::ifstream csvFile = std::ifstream(dir);
@@ -119,14 +119,7 @@ void ReadCountriesCSV(std::vector<CountryData>& countries, const char* dir)
         country.name = splitStr[4];
         country.lat = std::stod(splitStr[10]);
         country.lon = std::stod(splitStr[9]);
-        try
-        {
-            country.area = std::stoi(splitStr[5], nullptr, 10);
-        }
-        catch (const std::exception& e)
-        {
-            int a = 1;
-        }
+        country.area = std::stoi(splitStr[5], nullptr, 10);
         countries.push_back(country);
     }
     csvFile.close();

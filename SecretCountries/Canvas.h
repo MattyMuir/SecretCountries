@@ -13,9 +13,10 @@
 class Canvas : public wxPanel
 {
 public:
-	Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_);
+	Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_, bool draw);
 	~Canvas();
 
+	bool draw;
 	std::string displayText;
 	int secretIndex;
 	std::vector<int> guessIndicies;
