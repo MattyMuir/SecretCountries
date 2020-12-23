@@ -1,8 +1,8 @@
 #pragma once
-#include <wx\wx.h>
-#include <wx\dcclient.h>
-#include <wx\dcmemory.h>
-#include <wx\dcbuffer.h>
+#include <wx/wx.h>
+#include <wx/dcclient.h>
+#include <wx/dcmemory.h>
+#include <wx/dcbuffer.h>
 
 #include <string>
 #include <random>
@@ -42,13 +42,17 @@ private:
 	wxMenu* gameMenu;
 
 	wxStaticText* mLabel;
+	wxStaticText* guessNumText;
+	wxStaticText* answerRevealText;
 	wxTextCtrl* mTextBox;
 	wxButton* guessButton;
+	wxButton* giveUpButton;
 
 	void KeyEntered(wxKeyEvent& evt);
 
 	void ButtonPressed(wxCommandEvent& evt);
 	void GuessMade();
+	void GiveUp(wxCommandEvent& evt);
 
 	void GameReset(wxCommandEvent& evt);
 	void OnOpenSHP(wxCommandEvent& evt);

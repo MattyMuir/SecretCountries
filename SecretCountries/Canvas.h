@@ -1,8 +1,8 @@
 #pragma once
-#include <wx\wx.h>
-#include <wx\dcclient.h>
-#include <wx\dcmemory.h>
-#include <wx\dcbuffer.h>
+#include <wx/wx.h>
+#include <wx/dcclient.h>
+#include <wx/dcmemory.h>
+#include <wx/dcbuffer.h>
 
 #include <string>
 #include <vector>
@@ -20,6 +20,7 @@ public:
 	std::string displayText;
 	int secretIndex;
 	std::vector<int> guessIndicies;
+	bool ended;
 protected:
 	int w, h;
 	Shapefile* datasetPtr;

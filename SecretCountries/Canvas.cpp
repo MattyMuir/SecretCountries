@@ -12,6 +12,7 @@ Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData
 	countriesPtr = countriesPtr_;
 	displayText = "";
 	draw = draw_;
+	ended = false;
 }
 
 Canvas::~Canvas()
@@ -45,6 +46,7 @@ mPoint Canvas::Transform(double x, double y)
 
 void Canvas::OnDraw(wxDC& dc)
 {
+	bool finished = false;
 	Shapefile& dataset = *datasetPtr;
 	std::vector<CountryData>& countries = *countriesPtr;
 
@@ -64,6 +66,9 @@ void Canvas::OnDraw(wxDC& dc)
 	brush.SetColour(defaultFill);
 	dc.SetPen(pen);
 
+	for (int guess : guessIndicies)
+		if (guess == secretIndex) { finished = true; }
+
 	int polyIndex = 0;
 	for (mPolygon poly : dataset.polygons)
 	{
@@ -75,7 +80,7 @@ void Canvas::OnDraw(wxDC& dc)
 				guessed = true;
 			}
 		}
-		if (guessed)
+		if (guessed || finished || ended)
 		{
 			CountryData& g = countries[polyIndex];
 			CountryData& s = countries[secretIndex];
