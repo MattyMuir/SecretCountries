@@ -14,8 +14,10 @@
 class Canvas : public wxPanel
 {
 public:
-	Canvas(wxWindow* parent, bool blind_);
+	Canvas(wxWindow* parent);
 	~Canvas();
+
+	void FullRefresh();
 
 	void ResetCountries();
 	void CountryGuessed(int index);
@@ -29,13 +31,15 @@ public:
 	int nGuesses = 0;
 protected:
 	int w, h;
-	bool blind;
+	wxBitmap* cache = nullptr;
 
 	wxPoint Transform(double x, double y);
 
 	void OnDraw(wxDC& dc);
 	void OnPaint(wxPaintEvent& evt);
 	void Resized(wxSizeEvent& evt);
+	void UpdateCache(wxDC* dc);
+	void ClearCache();
 
 	wxDECLARE_EVENT_TABLE();
 };

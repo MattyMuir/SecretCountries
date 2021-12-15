@@ -5,8 +5,8 @@ wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_SIZE(Canvas::Resized)
 wxEND_EVENT_TABLE()
 
-Canvas::Canvas(wxWindow* parent, bool blind_)
-	: wxPanel(parent, wxID_ANY), blind(blind_)
+Canvas::Canvas(wxWindow* parent)
+	: wxPanel(parent, wxID_ANY)
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
 }
@@ -17,6 +17,12 @@ Canvas::~Canvas()
 	{
 		SHPDestroyObject(country.geometry);
 	}
+}
+
+void Canvas::FullRefresh()
+{
+	ClearCache();
+	Refresh();
 }
 
 wxPoint Canvas::Transform(double x, double y)
@@ -111,15 +117,39 @@ void Canvas::OnPaint(wxPaintEvent& evt)
 	wxBufferedPaintDC dc(this);
 	if (ready)
 	{
-		this->GetSize(&w, &h);
-		this->PrepareDC(dc);
-		this->OnDraw(dc);
+		GetSize(&w, &h);
+		PrepareDC(dc);
+
+		if (cache)
+		{
+			dc.DrawBitmap(*cache, 0, 0);
+		}
+		else
+		{
+			OnDraw(dc);
+			UpdateCache(&dc);
+		}
 	}
 }
 
 void Canvas::Resized(wxSizeEvent& evt)
 {
-	this->GetSize(&w, &h);
-	this->Refresh();
+	GetSize(&w, &h);
+	FullRefresh();
 	evt.Skip();
+}
+
+void Canvas::UpdateCache(wxDC* dc)
+{
+	cache = new wxBitmap(w, h);
+	wxMemoryDC memDC(*cache);
+	memDC.Blit(0, 0, w, h, dc, 0, 0);
+	memDC.SelectObject(wxNullBitmap);
+}
+
+void Canvas::ClearCache()
+{
+	if (!cache) { return; }
+	delete cache;
+	cache = nullptr;
 }

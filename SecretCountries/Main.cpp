@@ -27,7 +27,7 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	mMenuBar->Append(gameMenu, "Game");
 
 	topPanel = new wxPanel(this, wxID_ANY);
-	mCanvas = new Canvas(this, false);
+	mCanvas = new Canvas(this);
 
 	mLabel = new wxStaticText(topPanel, wxID_ANY, "Enter Any Country:", wxPoint(5, 6));
 	mTextBox = new wxTextCtrl(topPanel, wxID_ANY, "", wxPoint(110, 5), wxSize(100, 20));
@@ -86,7 +86,7 @@ void Main::GuessMade()
 
 	mTextBox->Clear();
 	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->nGuesses)));
-	mCanvas->Refresh();
+	mCanvas->FullRefresh();
 }
 
 void Main::ButtonPressed(wxCommandEvent& evt)
@@ -100,7 +100,7 @@ void Main::GameReset(wxCommandEvent& evt)
 	mCanvas->ResetCountries();
 	mCanvas->nGuesses = 0;
 	mCanvas->secretIndex = dist(mt);
-	mCanvas->Refresh();
+	mCanvas->FullRefresh();
 
 	mTextBox->Clear();
 	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->nGuesses)));
@@ -116,7 +116,7 @@ void Main::GiveUp(wxCommandEvent& evt)
 
 		std::string answer = mCanvas->countries[mCanvas->secretIndex].metadata.name;
 		answerRevealText->SetLabelText("Answer: " + wxString(answer));
-		mCanvas->Refresh();
+		mCanvas->FullRefresh();
 	}
 	evt.Skip();
 }
@@ -186,5 +186,5 @@ void Main::InitializeCanvas()
 
 	mCanvas->ready = true;
 
-	mCanvas->Refresh();
+	mCanvas->FullRefresh();
 }
