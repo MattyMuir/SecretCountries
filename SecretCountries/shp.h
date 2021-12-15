@@ -1,56 +1,30 @@
 #pragma once
-#include <vector>
 #include <string>
-#include <map>
 
-typedef char mByte;
-struct Stats
+#include <shapefil.h>
+#include <wx/wx.h>
+
+struct Bounds
 {
-	int32_t fileCode, fileLength, shapeType;
-	double xMin, yMin, xMax, yMax, zMin, zMax, mMin, mMax;
+	double xMin, yMin, zMin, mMin, xMax, yMax, zMax, mMax;
 };
-struct mPoint
+struct CountryMeta
 {
-	mPoint()
-	{
-		x = 0;
-		y = 0;
-	}
-	mPoint(int x_, int y_)
-	{
-		x = x_;
-		y = y_;
-	}
-	double x, y;
+	CountryMeta() {}
+
+	std::string name = "";
+	double lat = 0.0, lon = 0.0;
+	int area = 0;
 };
-struct MultiPoint
+struct Country
 {
-	double box[4]; //xMin, yMin, xMax, yMax
-	int32_t nPoints;
-	std::vector<mPoint> points;
-};
-struct PolyLine
-{
-	double box[4]; //xMin, yMin, xMax, yMax
-	int32_t nParts, nPoints;
-	std::vector<int32_t> parts;
-	std::vector<mPoint> points;
-};
-struct mPolygon
-{
-	double box[4]; //xMin, yMin, xMax, yMax
-	int32_t nRings, tPoints;
-	std::vector<int32_t> parts;
-	std::vector<mPoint> points;
-};
-struct Shapefile
-{
-	Stats fileStats;
-	std::vector<mPolygon> polygons;
-};
-struct CountryData
-{
-	std::string name;
-	double lat, lon;
-	int area;
+	Country(SHPObject* geometry_)
+		: geometry(geometry_) {}
+	Country(SHPObject* geometry_, const CountryMeta& metadata_, const wxColour& col_)
+		: geometry(geometry_), metadata(metadata_), col(col_) {}
+
+	SHPObject* geometry = nullptr;
+	CountryMeta metadata;
+	wxColour col = wxColour(255, 255, 255);
+	bool guessed = false;
 };

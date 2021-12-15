@@ -10,18 +10,15 @@ wxEND_EVENT_TABLE()
 
 Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(1280, 720))
 {
-	const char* shpDir = "";
-	const char* csvDir = "";
-
-	hasSHP = false;
-	hasCSV = false;
-
 	// Window setup
 	mMenuBar = new wxMenuBar();
 
 	fileMenu = new wxMenu();
 	fileMenu->Append(20001, "Open SHP");
 	fileMenu->Append(20002, "Open CSV");
+
+	// Disable Open CSV option, as SHP must be opened first
+	fileMenu->Enable(20002, false);
 
 	gameMenu = new wxMenu();
 	gameMenu->Append(20003, "Reset");
@@ -30,7 +27,7 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	mMenuBar->Append(gameMenu, "Game");
 
 	topPanel = new wxPanel(this, wxID_ANY);
-	mCanvas = new Canvas(this, &dataset, &countries, false);
+	mCanvas = new Canvas(this, false);
 
 	mLabel = new wxStaticText(topPanel, wxID_ANY, "Enter Any Country:", wxPoint(5, 6));
 	mTextBox = new wxTextCtrl(topPanel, wxID_ANY, "", wxPoint(110, 5), wxSize(100, 20));
@@ -56,26 +53,39 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 
 Main::~Main()
 {
-
+	delete mCanvas;
 }
 
 void Main::GuessMade()
 {
 	std::string guess = mTextBox->GetValue().ToStdString();
+
+	// Make guess all lower case
 	std::transform(guess.begin(), guess.end(), guess.begin(),
 		[](unsigned char c) { return std::tolower(c); });
 
+	// Look through countries for a name match and save in 'index'
 	int index = -1;
-	for (int i = 0; i < countries.size(); i++)
-		if (countries[i].name == guess) { index = i; }
+	for (int i = 0; i < mCanvas->countries.size(); i++)
+		if (mCanvas->countries[i].metadata.name == guess) { index = i; }
 
-	bool alreadyGuessed = false;
-	for (int guessed : mCanvas->guessIndicies)
+	if (index == -1) { return; }
+
+	if (mCanvas->countries[index].guessed) { return; }
+
+	mCanvas->nGuesses++;
+	if (index == mCanvas->secretIndex)
 	{
-		if (index == guessed) { alreadyGuessed = true; }
+		mCanvas->RevealAll();
 	}
-	if (index != -1 && !alreadyGuessed) { mCanvas->guessIndicies.push_back(index); mTextBox->Clear(); }
-	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->guessIndicies.size())));
+	else
+	{
+		mCanvas->countries[index].guessed = true;
+		mCanvas->CountryGuessed(index);
+	}
+
+	mTextBox->Clear();
+	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->nGuesses)));
 	mCanvas->Refresh();
 }
 
@@ -87,23 +97,25 @@ void Main::ButtonPressed(wxCommandEvent& evt)
 
 void Main::GameReset(wxCommandEvent& evt)
 {
-	mCanvas->guessIndicies.clear();
-	secretIndex = dist(mt);
-	mCanvas->secretIndex = secretIndex;
-	mCanvas->ended = false;
-	//mCanvas->displayText = countries[secretIndex].name;
+	mCanvas->ResetCountries();
+	mCanvas->nGuesses = 0;
+	mCanvas->secretIndex = dist(mt);
 	mCanvas->Refresh();
-	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->guessIndicies.size())));
+
+	mTextBox->Clear();
+	guessNumText->SetLabelText("Guesses: " + wxString(std::to_string(mCanvas->nGuesses)));
 	answerRevealText->SetLabelText("");
 	evt.Skip();
 }
 
 void Main::GiveUp(wxCommandEvent& evt)
 {
-	if (hasSHP && hasCSV)
+	if (mCanvas->ready)
 	{
-		mCanvas->ended = true;
-		answerRevealText->SetLabelText("Answer: " + wxString(countries[mCanvas->secretIndex].name));
+		mCanvas->RevealAll();
+
+		std::string answer = mCanvas->countries[mCanvas->secretIndex].metadata.name;
+		answerRevealText->SetLabelText("Answer: " + wxString(answer));
 		mCanvas->Refresh();
 	}
 	evt.Skip();
@@ -115,19 +127,27 @@ void Main::OnOpenSHP(wxCommandEvent& evt)
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		shpDir = dlg.GetPath().ToStdString();
-		ReadPolyShapefile(dataset, shpDir);
-		for (mPolygon& poly : dataset.polygons)
+
+		// Read shapefile
+		SHPHandle fileHandle = SHPOpen(shpDir.c_str(), "rb");
+		SHPGetInfo(fileHandle, &mCanvas->nCountries, nullptr, &mCanvas->bounds.xMin, &mCanvas->bounds.xMax);
+
+		auto& countries = mCanvas->countries;
+		countries.reserve(mCanvas->nCountries);
+		for (int p = 0; p < mCanvas->nCountries; p++)
 		{
-			poly.parts.push_back(poly.tPoints);
+			SHPObject* geometry = SHPReadObject(fileHandle, p);
+			countries.emplace_back(geometry);
 		}
-		hasSHP = true;
-		InitializeCanvas();
+		SHPClose(fileHandle);
+
+		fileMenu->Enable(20002, true);
 	}
 }
 
 void Main::KeyEntered(wxKeyEvent& evt)
 {
-	if (evt.GetKeyCode() == 13)
+	if (evt.GetKeyCode() == WXK_RETURN)
 	{
 		GuessMade();
 	}
@@ -140,29 +160,31 @@ void Main::OnOpenCSV(wxCommandEvent& evt)
 	if (dlg.ShowModal() == wxID_OK)
 	{
 		csvDir = dlg.GetPath().ToStdString();
-		ReadCountriesCSV(countries, csvDir);
-		for (CountryData& country : countries)
+
+		// Read CSV file
+		std::vector<CountryMeta> allMetadata;
+		ReadCountriesCSV(allMetadata, csvDir);
+		for (int ci = 0; ci < allMetadata.size(); ci++)
 		{
-			std::transform(country.name.begin(), country.name.end(), country.name.begin(),
+			CountryMeta& meta = allMetadata[ci];
+
+			// Convert country name to lower case
+			std::transform(meta.name.begin(), meta.name.end(), meta.name.begin(),
 				[](unsigned char c) { return std::tolower(c); });
+
+			mCanvas->countries[ci].metadata = meta;
 		}
-		hasCSV = true;
 		InitializeCanvas();
 	}
 }
 
 void Main::InitializeCanvas()
 {
-	if (hasSHP && hasCSV)
-	{
-		mt = std::mt19937(rd());
-		dist = std::uniform_int_distribution<int>(0, countries.size() - 1);
-		secretIndex = dist(mt);
+	mt = std::mt19937(rd());
+	dist = std::uniform_int_distribution<int>(0, mCanvas->countries.size() - 1);
+	mCanvas->secretIndex = dist(mt);
 
-		mCanvas->draw = true;
-		mCanvas->secretIndex = secretIndex;
-		//mCanvas->displayText = countries[secretIndex].name;
+	mCanvas->ready = true;
 
-		mCanvas->Refresh();
-	}
+	mCanvas->Refresh();
 }

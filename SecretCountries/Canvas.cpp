@@ -5,143 +5,111 @@ wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_SIZE(Canvas::Resized)
 wxEND_EVENT_TABLE()
 
-Canvas::Canvas(wxWindow* parent, Shapefile* datasetPtr_, std::vector<CountryData>* countriesPtr_, bool draw_) : wxPanel(parent, wxID_ANY)
+Canvas::Canvas(wxWindow* parent, bool blind_)
+	: wxPanel(parent, wxID_ANY), blind(blind_)
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
-	datasetPtr = datasetPtr_;
-	countriesPtr = countriesPtr_;
-	displayText = "";
-	draw = draw_;
-	ended = false;
 }
 
 Canvas::~Canvas()
 {
-
+	for (Country& country : countries)
+	{
+		SHPDestroyObject(country.geometry);
+	}
 }
 
-mPoint Canvas::Transform(mPoint p)
+wxPoint Canvas::Transform(double x, double y)
 {
-	Shapefile& dataset = *datasetPtr;
+	double dataWidth = bounds.xMax - bounds.xMin;
+	double dataHeight = bounds.yMax - bounds.yMin;
+	double x_ = (x - bounds.xMin) / dataWidth * w;
+	double y_ = h - (y - bounds.yMin) / dataHeight * h;
 
-	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
-	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
-	double x_ = (p.x - dataset.fileStats.xMin) / dataWidth * w;
-	double y_ = h - (p.y - dataset.fileStats.yMin) / dataHeight * h;
-
-	return mPoint(x_, y_);
+	return wxPoint(x_, y_);
 }
 
-mPoint Canvas::Transform(double x, double y)
+void Canvas::ResetCountries()
 {
-	Shapefile& dataset = *datasetPtr;
+	for (Country& c : countries)
+	{
+		c.col = wxColour(255, 255, 255);
+		c.guessed = false;
+	}
+}
 
-	double dataWidth = dataset.fileStats.xMax - dataset.fileStats.xMin;
-	double dataHeight = dataset.fileStats.yMax - dataset.fileStats.yMin;
-	double x_ = (x - dataset.fileStats.xMin) / dataWidth * w;
-	double y_ = h - (y - dataset.fileStats.yMin) / dataHeight * h;
+void Canvas::CountryGuessed(int index)
+{
+	Country& g = countries[index];
+	Country& s = countries[secretIndex];
 
-	return mPoint(x_, y_);
+	double dist = sqrt(pow(g.metadata.lat - s.metadata.lat, 2) + pow(g.metadata.lon - s.metadata.lon, 2));
+	if (index == secretIndex)
+	{
+		g.col = wxColour(0, 0, 0);
+	}
+	else
+	{
+		g.col = wxHSL(120 / (0.05 * dist + 1), 255, 255);
+	}
+}
+
+void Canvas::RevealAll()
+{
+	for (int i = 0; i < countries.size(); i++)
+	{
+		CountryGuessed(i);
+	}
 }
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	bool finished = false;
-	Shapefile& dataset = *datasetPtr;
-	std::vector<CountryData>& countries = *countriesPtr;
-
-	wxColour defaultLine = wxColour(0, 0, 0);
-	wxColour defaultFill = wxColour(255, 255, 255);
-
 	dc.Clear();
-	wxPen pen = dc.GetPen();
-	wxBrush brush = dc.GetBrush();
 
-	brush.SetColour(wxColour(190, 190, 190));
-	dc.SetBrush(brush);
-	dc.DrawRectangle(-10, -10, w + 20, h + 20);
+	wxBrush brush(wxColour(255, 255, 255), wxBRUSHSTYLE_SOLID);
 
-	pen.SetStyle(wxPENSTYLE_SOLID);
-	pen.SetColour(defaultLine);
-	brush.SetColour(defaultFill);
-	dc.SetPen(pen);
-
-	for (int guess : guessIndicies)
-		if (guess == secretIndex) { finished = true; }
-
-	int polyIndex = 0;
-	for (mPolygon poly : dataset.polygons)
+	for (int polyI = 0; polyI < nCountries; polyI++)
 	{
-		bool guessed = false;
-		for (int guess : guessIndicies)
-		{
-			if (polyIndex == guess)
-			{
-				guessed = true;
-			}
-		}
-		if (guessed || finished || ended)
-		{
-			CountryData& g = countries[polyIndex];
-			CountryData& s = countries[secretIndex];
+		Country& country = countries[polyI];
+		SHPObject* poly = countries[polyI].geometry;
 
-			double dist = sqrt(pow(g.lat - s.lat, 2) + pow(g.lon - s.lon, 2));
-			if (polyIndex == secretIndex)
-			{
-				pen.SetColour(wxColour(255, 0, 0));
-				brush.SetColour(wxColour(0, 0, 0));
-			}
-			else
-			{
-				pen.SetColour(defaultLine);
-				brush.SetColour(wxHSL(120 / (0.05 * dist + 1), 255, 255));
-			}
-			dc.SetBrush(brush);
-			dc.SetPen(pen);
-			if (g.area < 3000)
-			{
-				mPoint t = Transform(g.lon, g.lat);
-				dc.DrawCircle(t.x, t.y, 5);
-			}
-		}
-		else
-		{
-			brush.SetColour(defaultFill);
-			pen.SetColour(defaultLine);
-			dc.SetPen(pen);
-			dc.SetBrush(brush);
-		}
-		for (int ringIndex = 0; ringIndex < poly.nRings; ringIndex++)
-		{
-			int startIndex = poly.parts[ringIndex];
+		// Set colour
+		brush.SetColour(countries[polyI].col);
+		dc.SetBrush(brush);
 
-			std::vector<wxPoint> pointsSource;
-			wxPointList list;
-			for (int pIndex = startIndex + 1; pIndex < poly.parts[ringIndex + 1]; pIndex++)
-			{
-				mPoint t = Transform(poly.points[pIndex].x, poly.points[pIndex].y);
-				pointsSource.push_back(wxPoint(t.x, t.y));
-			}
+		// Draw polygons
+		for (int partIndex = 0; partIndex < poly->nParts; partIndex++)
+		{
+			int startIndex = poly->panPartStart[partIndex];
+			int endIndex = (partIndex < poly->nParts - 1) ? poly->panPartStart[partIndex + 1] : poly->nVertices;
+			int partSize = endIndex - startIndex;
 
-			for (wxPoint& p : pointsSource)
+			wxPoint* points = new wxPoint[partSize];
+			for (int pi = 0; pi < partSize; pi++)
 			{
-				list.Append(&p);
+				points[pi] = Transform(poly->padfX[startIndex + pi], poly->padfY[startIndex + pi]);
 			}
-			dc.DrawPolygon(&list, 0, 0, wxODDEVEN_RULE);
+			dc.DrawPolygon(partSize, points);
+
+			delete[] points;
 		}
-		polyIndex++;
+
+		// Check if country is very small
+		if (country.metadata.area < 3000)
+		{
+			// Draw cirlce on country
+			if (country.guessed)
+			{
+				dc.DrawCircle(Transform(country.metadata.lon, country.metadata.lat), 5);
+			}
+		}
 	}
-	dc.SetTextForeground(wxColour(255, 0, 0));
-	dc.DrawText(wxString(displayText), wxPoint(50, 50));
-
-	brush.SetColour(wxColour(255, 0, 0));
-	dc.SetBrush(brush);
 }
 
 void Canvas::OnPaint(wxPaintEvent& evt)
 {
 	wxBufferedPaintDC dc(this);
-	if (draw)
+	if (ready)
 	{
 		this->GetSize(&w, &h);
 		this->PrepareDC(dc);

@@ -23,12 +23,6 @@ private:
 	std::string shpDir;
 	std::string csvDir;
 
-	bool hasSHP, hasCSV;
-
-	Shapefile dataset;
-	std::vector<CountryData> countries;
-	int secretIndex;
-
 	std::random_device rd;
 	std::mt19937 mt;
 	std::uniform_int_distribution<int> dist;
