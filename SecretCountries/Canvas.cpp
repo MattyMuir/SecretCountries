@@ -1,5 +1,7 @@
 #include "Canvas.h"
 
+#define USES_CACHING 0
+
 wxBEGIN_EVENT_TABLE(Canvas, wxPanel)
 	EVT_PAINT(Canvas::OnPaint)
 	EVT_SIZE(Canvas::Resized)
@@ -153,7 +155,9 @@ void Canvas::OnPaint(wxPaintEvent& evt)
 		else
 		{
 			OnDraw(dc);
+#if USES_CACHING == 1
 			UpdateCache(&dc);
+#endif
 		}
 	}
 }
@@ -177,6 +181,6 @@ void Canvas::UpdateCache(wxDC* dc)
 void Canvas::ClearCache()
 {
 	if (!cache) { return; }
-	delete[] cache;
+	delete cache;
 	cache = nullptr;
 }
