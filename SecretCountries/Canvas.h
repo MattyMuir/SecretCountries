@@ -23,7 +23,9 @@ public:
 	void AllChanged();
 	void CountryGuessed(int index);
 	void RevealAll();
+	void SetBlind(bool isBlind);
 
+	bool blind = false;
 	bool ready = false;
 	int secretIndex = 0;
 	std::vector<Country> countries;

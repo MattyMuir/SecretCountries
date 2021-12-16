@@ -42,11 +42,14 @@ private:
 	wxButton* guessButton;
 	wxButton* giveUpButton;
 
+	wxCheckBox* blindBox;
+
 	void KeyEntered(wxKeyEvent& evt);
 
 	void ButtonPressed(wxCommandEvent& evt);
 	void GuessMade();
 	void GiveUp(wxCommandEvent& evt);
+	void BlindBoxClicked(wxCommandEvent& evt);
 
 	void GameReset(wxCommandEvent& evt);
 	void OnOpenSHP(wxCommandEvent& evt);

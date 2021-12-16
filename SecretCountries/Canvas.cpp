@@ -81,8 +81,17 @@ void Canvas::RevealAll()
 	}
 }
 
+void Canvas::SetBlind(bool isBlind)
+{
+	blind = isBlind;
+	AllChanged();
+	FullRefresh();
+}
+
 void Canvas::OnDraw(wxDC& dc)
 {
+	if (blind) { dc.SetBackground(wxBrush(wxColour(0, 0, 0))); }
+	else { dc.SetBackground(wxBrush(wxColour(200, 200, 200))); }
 	if (changelog.size() == nCountries) { dc.Clear(); }
 
 	wxBrush brush(wxColour(255, 255, 255), wxBRUSHSTYLE_SOLID);
@@ -91,6 +100,8 @@ void Canvas::OnDraw(wxDC& dc)
 	{
 		Country& country = countries[polyI];
 		SHPObject* poly = countries[polyI].geometry;
+
+		if (blind && !country.guessed) { continue; }
 
 		// Set colour
 		brush.SetColour(countries[polyI].col);

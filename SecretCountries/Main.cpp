@@ -6,6 +6,7 @@ wxBEGIN_EVENT_TABLE(Main, wxFrame)
 	EVT_MENU(20002, Main::OnOpenCSV)
 	EVT_BUTTON(10001, Main::ButtonPressed)
 	EVT_BUTTON(10002, Main::GiveUp)
+	EVT_CHECKBOX(10003, Main::BlindBoxClicked)
 wxEND_EVENT_TABLE()
 
 Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), wxSize(1280, 720))
@@ -34,7 +35,9 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 	guessButton = new wxButton(topPanel, 10001, "Guess", wxPoint(217, 0), wxSize(100, 30));
 	giveUpButton = new wxButton(topPanel, 10002, "Give Up", wxPoint(320, 0), wxSize(100, 30));
 	guessNumText = new wxStaticText(topPanel, wxID_ANY, "Guesses: 0", wxPoint(430, 7));
-	answerRevealText = new wxStaticText(topPanel, wxID_ANY, "", wxPoint(510, 7));
+	answerRevealText = new wxStaticText(topPanel, wxID_ANY, "", wxPoint(600, 7));
+
+	blindBox = new wxCheckBox(topPanel, 10003, "Blind", wxPoint(510, 7));
 
 	mTextBox->Bind(wxEVT_CHAR_HOOK, &Main::KeyEntered, this);
 
@@ -118,6 +121,11 @@ void Main::GiveUp(wxCommandEvent& evt)
 		mCanvas->FullRefresh();
 	}
 	evt.Skip();
+}
+
+void Main::BlindBoxClicked(wxCommandEvent& evt)
+{
+	mCanvas->SetBlind(evt.IsChecked());
 }
 
 void Main::OnOpenSHP(wxCommandEvent& evt)
