@@ -53,7 +53,7 @@ Main::Main() : wxFrame(nullptr, wxID_ANY, "Secret Countries", wxPoint(30, 30), w
 
 Main::~Main()
 {
-	delete mCanvas;
+
 }
 
 void Main::GuessMade()
@@ -80,7 +80,6 @@ void Main::GuessMade()
 	}
 	else
 	{
-		mCanvas->countries[index].guessed = true;
 		mCanvas->CountryGuessed(index);
 	}
 
@@ -185,6 +184,6 @@ void Main::InitializeCanvas()
 	mCanvas->secretIndex = dist(mt);
 
 	mCanvas->ready = true;
-
+	mCanvas->AllChanged();
 	mCanvas->FullRefresh();
 }

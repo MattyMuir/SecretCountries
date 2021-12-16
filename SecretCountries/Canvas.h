@@ -20,6 +20,7 @@ public:
 	void FullRefresh();
 
 	void ResetCountries();
+	void AllChanged();
 	void CountryGuessed(int index);
 	void RevealAll();
 
@@ -29,6 +30,7 @@ public:
 	int nCountries;
 	Bounds bounds;
 	int nGuesses = 0;
+	std::vector<int> changelog;
 protected:
 	int w, h;
 	wxBitmap* cache = nullptr;

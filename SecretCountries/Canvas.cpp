@@ -9,6 +9,7 @@ Canvas::Canvas(wxWindow* parent)
 	: wxPanel(parent, wxID_ANY)
 {
 	SetBackgroundStyle(wxBG_STYLE_PAINT);
+	changelog.reserve(nCountries);
 }
 
 Canvas::~Canvas()
@@ -17,6 +18,7 @@ Canvas::~Canvas()
 	{
 		SHPDestroyObject(country.geometry);
 	}
+	ClearCache();
 }
 
 void Canvas::FullRefresh()
@@ -42,6 +44,15 @@ void Canvas::ResetCountries()
 		c.col = wxColour(255, 255, 255);
 		c.guessed = false;
 	}
+	AllChanged();
+}
+
+void Canvas::AllChanged()
+{
+	for (int i = 0; i < nCountries; i++)
+	{
+		changelog.push_back(i);
+	}
 }
 
 void Canvas::CountryGuessed(int index)
@@ -58,6 +69,8 @@ void Canvas::CountryGuessed(int index)
 	{
 		g.col = wxHSL(120 / (0.05 * dist + 1), 255, 255);
 	}
+	g.guessed = true;
+	changelog.push_back(index);
 }
 
 void Canvas::RevealAll()
@@ -70,11 +83,11 @@ void Canvas::RevealAll()
 
 void Canvas::OnDraw(wxDC& dc)
 {
-	dc.Clear();
+	if (changelog.size() == nCountries) { dc.Clear(); }
 
 	wxBrush brush(wxColour(255, 255, 255), wxBRUSHSTYLE_SOLID);
 
-	for (int polyI = 0; polyI < nCountries; polyI++)
+	for (int polyI : changelog)
 	{
 		Country& country = countries[polyI];
 		SHPObject* poly = countries[polyI].geometry;
@@ -110,6 +123,8 @@ void Canvas::OnDraw(wxDC& dc)
 			}
 		}
 	}
+
+	changelog.clear();
 }
 
 void Canvas::OnPaint(wxPaintEvent& evt)
@@ -135,6 +150,7 @@ void Canvas::OnPaint(wxPaintEvent& evt)
 void Canvas::Resized(wxSizeEvent& evt)
 {
 	GetSize(&w, &h);
+	AllChanged();
 	FullRefresh();
 	evt.Skip();
 }
@@ -150,6 +166,6 @@ void Canvas::UpdateCache(wxDC* dc)
 void Canvas::ClearCache()
 {
 	if (!cache) { return; }
-	delete cache;
+	delete[] cache;
 	cache = nullptr;
 }
